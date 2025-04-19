@@ -1,0 +1,13 @@
+# Binaries
+bugbox
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE config
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
