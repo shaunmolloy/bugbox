@@ -15,7 +15,7 @@ func Setup() error {
 
 	clearTerminal()
 
-	logging.Info("Starting setup..")
+	logging.Info("Starting setup")
 
 	handleGitHubToken()
 	handleGitHubOrgs()
@@ -30,8 +30,8 @@ func Setup() error {
 }
 
 func isSetup() bool {
-	if len(os.Args) != 1 && os.Args[1] != "setup" {
-		return false
+	if (len(os.Args) > 0 && os.Args[1] == "setup") {
+		return true
 	}
 	if !config.IsExist(config.ConfigPath) {
 		return true
