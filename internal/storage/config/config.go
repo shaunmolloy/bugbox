@@ -9,16 +9,7 @@ import (
 
 var ConfigPath = filepath.Join(os.Getenv("HOME"), ".config", "bugbox", "config.json")
 
-type Config struct {
-	GitHubToken string   `json:"github_token"`
-	Orgs        []string `json:"orgs"`
-}
-
-func IsExist() bool {
-	_, err := os.Stat(ConfigPath)
-	return !os.IsNotExist(err)
-}
-
+// Validate checks config.json exists with expected structure
 func Validate() error {
 	file, err := os.Open(ConfigPath)
 	if err != nil {
@@ -42,35 +33,14 @@ func Validate() error {
 	return nil
 }
 
-func LoadConfig() (Config, error) {
-	var conf Config
-	data, err := os.ReadFile(ConfigPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return conf, nil // return empty config
-		}
-		return conf, err
-	}
-
-	if err := json.Unmarshal(data, &conf); err != nil {
-		return conf, err
-	}
-	return conf, nil
+// SaveConfig saves the config to config.json
+func SaveConfig(cfg Config) error {
+	return SaveToFile(ConfigPath, cfg)
 }
 
-func SaveConfig(config Config) error {
-	dir := filepath.Dir(ConfigPath)
-	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		return err
-	}
-
-	file, err := os.Create(ConfigPath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	return encoder.Encode(config)
+// LoadFromFile loads the config from config.json
+func LoadConfig() (Config, error) {
+	var cfg Config
+	err := LoadFromFile(ConfigPath, &cfg)
+	return cfg, err
 }
