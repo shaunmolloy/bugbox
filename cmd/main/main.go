@@ -16,7 +16,7 @@ func main() {
 		log.Printf("Error setting up logger: %v\n", err)
 		os.Exit(1)
 	}
-	logging.Info("Bugbox started")
+	logging.Info("BugBox started")
 
 	if err := setup.Setup(); err != nil {
 		logging.Error(fmt.Sprintf("Setup failed: %v\n", err))
