@@ -50,7 +50,7 @@ func FetchIssues(owner string) ([]types.Issue, error) {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "token " + conf.GitHubToken)
+	req.Header.Set("Authorization", "token "+conf.GitHubToken)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
 	client := &http.Client{}

@@ -26,4 +26,3 @@ func main() {
 	scheduler.FetchIssues()
 	tui.Start()
 }
-

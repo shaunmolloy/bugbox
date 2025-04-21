@@ -88,7 +88,7 @@ func issuesView() tview.Primitive {
 		if len(title) > 72 {
 			title = title[:72] + "..."
 		}
-		 
+
 		table.SetCell(row+1, 0, tview.NewTableCell(title))
 		table.SetCell(row+1, 1, tview.NewTableCell(issue.Org))
 		table.SetCell(row+1, 2, tview.NewTableCell(issue.CreatedAt.Format("2006-01-02")))

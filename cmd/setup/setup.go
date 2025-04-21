@@ -11,7 +11,9 @@ import (
 )
 
 func Setup() error {
-	if !isSetup() { return nil }
+	if !isSetup() {
+		return nil
+	}
 
 	clearTerminal()
 
@@ -30,7 +32,7 @@ func Setup() error {
 }
 
 func isSetup() bool {
-	if (len(os.Args) > 0 && os.Args[1] == "setup") {
+	if len(os.Args) > 0 && os.Args[1] == "setup" {
 		return true
 	}
 	if !config.IsExist(config.ConfigPath) {
@@ -74,7 +76,7 @@ func handleGitHubOrgs() error {
 	fmt.Print("\nEnter GitHub org(s) to find issues from: ")
 
 	reader := bufio.NewReader(os.Stdin)
-	value, err :=  reader.ReadString('\n')
+	value, err := reader.ReadString('\n')
 	orgs := strings.Split(strings.TrimSpace(value), ",")
 	if err != nil {
 		logging.Error(fmt.Sprintf("Error reading orgs: %v\n", err))
