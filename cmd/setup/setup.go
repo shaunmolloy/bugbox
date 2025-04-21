@@ -32,7 +32,7 @@ func Setup() error {
 }
 
 func isSetup() bool {
-	if len(os.Args) > 0 && os.Args[1] == "setup" {
+	if len(os.Args) > 1 && os.Args[1] == "setup" {
 		return true
 	}
 	if !config.IsExist(config.ConfigPath) {
