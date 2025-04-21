@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/shaunmolloy/bugbox/internal/logging"
 	"github.com/shaunmolloy/bugbox/internal/storage/config"
 )
 
@@ -14,16 +15,17 @@ func Setup() error {
 
 	clearTerminal()
 
-	fmt.Println("Starting setup..")
-	
+	logging.Info("Starting setup..")
+
 	handleGitHubToken()
 	handleGitHubOrgs()
 
 	if err := config.Validate(); err != nil {
-		return fmt.Errorf("Config format is invalid: %w", err)
+		logging.Error(fmt.Sprintf("Config format is invalid: %v\n", err))
+		return err
 	}
 
-	fmt.Println("\nSetup complete!")
+	logging.Info("Setup complete!")
 	return nil
 }
 
@@ -31,7 +33,7 @@ func isSetup() bool {
 	if len(os.Args) != 1 && os.Args[1] != "setup" {
 		return false
 	}
-	if !config.IsExist() {
+	if !config.IsExist(config.ConfigPath) {
 		return true
 	}
 	if err := config.Validate(); err != nil {
@@ -45,14 +47,15 @@ func clearTerminal() {
 }
 
 func handleGitHubToken() error {
-    fmt.Print("\nEnter your GitHub personal access token: ")
+	fmt.Print("\nEnter your GitHub personal access token: ")
 
-    reader := bufio.NewReader(os.Stdin)
-    value, err := reader.ReadString('\n')
+	reader := bufio.NewReader(os.Stdin)
+	value, err := reader.ReadString('\n')
 	token := strings.TrimSpace(value)
-    if err != nil {
-        return fmt.Errorf("Error reading token: %w", err)
-    }
+	if err != nil {
+		logging.Error(fmt.Sprintf("Error reading token: %v\n", err))
+		return err
+	}
 
 	conf, err := config.LoadConfig()
 	if err != nil {
@@ -61,20 +64,22 @@ func handleGitHubToken() error {
 
 	conf.GitHubToken = token
 	if err := config.SaveConfig(conf); err != nil {
-		return fmt.Errorf("Error saving config: %w", err)
+		logging.Error(fmt.Sprintf("Error saving config: %v\n", err))
+		return err
 	}
-    return nil
+	return nil
 }
 
 func handleGitHubOrgs() error {
 	fmt.Print("\nEnter GitHub org(s) to find issues from: ")
 
-    reader := bufio.NewReader(os.Stdin)
-    value, err :=  reader.ReadString('\n')
+	reader := bufio.NewReader(os.Stdin)
+	value, err :=  reader.ReadString('\n')
 	orgs := strings.Split(strings.TrimSpace(value), ",")
-    if err != nil {
-        return fmt.Errorf("Error reading orgs: %w", err)
-    }
+	if err != nil {
+		logging.Error(fmt.Sprintf("Error reading orgs: %v\n", err))
+		return err
+	}
 
 	conf, err := config.LoadConfig()
 	if err != nil {
@@ -83,7 +88,8 @@ func handleGitHubOrgs() error {
 
 	conf.Orgs = orgs
 	if err := config.SaveConfig(conf); err != nil {
-		return fmt.Errorf("Error saving config: %w", err)
+		logging.Error(fmt.Sprintf("Error saving config: %v\n", err))
+		return err
 	}
-    return nil
+	return nil
 }
