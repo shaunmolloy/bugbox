@@ -9,13 +9,30 @@ import (
 	"github.com/shaunmolloy/bugbox/internal/storage/config"
 )
 
+// RefreshChan is a channel that receives signals to refresh the TUI
+var RefreshChan = make(chan struct{}, 1)
+
 // Start initializes and runs the TUI
 func Start() error {
 	app := tview.NewApplication()
 
 	handleKeyboardShortcuts(app)
 
+	// Create the initial layout
 	rootFlex := layout()
+
+	// Set up refresh handler
+	go func() {
+		for range RefreshChan {
+			logging.Info("Refreshing TUI with updated issues")
+			app.QueueUpdateDraw(func() {
+				// Replace the layout with a refreshed one
+				newLayout := layout()
+				app.SetRoot(newLayout, true)
+			})
+		}
+	}()
+
 	if err := app.SetRoot(rootFlex, true).Run(); err != nil {
 		logging.Error(fmt.Sprintf("Error: Failed to run TUI: %v", err))
 		return err

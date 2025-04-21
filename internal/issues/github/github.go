@@ -15,11 +15,7 @@ const baseURL = "https://api.github.com"
 
 func FetchAllIssues() error {
 	conf, _ := config.LoadConfig()
-
-	issuesConf, err := config.LoadIssues()
-	if err != nil {
-		issuesConf = config.Issues{} // fallback to default
-	}
+	issuesConf := config.Issues{}
 
 	for _, org := range conf.Orgs {
 		issues, err := FetchIssues(org)
