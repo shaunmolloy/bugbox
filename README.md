@@ -24,11 +24,11 @@ The aim for this project is to track and manage issues across multiple GitHub or
 
 - **List all issues**: Quickly view GitHub issues across multiple orgs and repos.
 - **Polling**: Automatic polling for the latest open issues.
+- **Search for Issues**: Search for issues using a built-in search bar.
+- **Open Issues in Browser**: Directly open issues in your default browser from the terminal.
 
 ### Coming soon
 
-- **Open Issues in Browser**: Directly open issues in your default browser from the terminal.
-- **Search for Issues**: Search for issues using a built-in search bar.
 - **Filter Issues by Org**: Supports filtering issues by GitHub organization names.
 
 ---
