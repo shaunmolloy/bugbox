@@ -24,7 +24,6 @@ func init() {
 	tview.Styles.PrimitiveBackgroundColor = tcell.ColorBlack
 	tview.Styles.BorderColor = tcell.ColorGrey
 	tview.Styles.TitleColor = tcell.ColorGrey
-	// tview.Styles.FocusColor = tcell.ColorWhite // This makes focus highlight same as regular borders
 }
 
 // Start initializes and runs the TUI
@@ -69,7 +68,7 @@ func layout() tview.Primitive {
 	rootFlex.AddItem(innerFlex, 0, 1, !showSearch)
 	
 	if showSearch {
-		rootFlex.AddItem(searchView(), 3, 0, true) // Focus on search view when visible
+		rootFlex.AddItem(searchView(), 1, 0, true) // Reduced height from 3 to 1
 	}
 	
 	rootFlex.AddItem(shortcutsView(), 1, 0, false)
@@ -171,6 +170,14 @@ func shortcutsView() tview.Primitive {
 	shortcuts := []string{
 		"/ - Search",
 		"Q - Quit",
+	}
+
+	if showSearch {
+		shortcuts = []string{
+			"Enter - Search",
+			"Esc - Cancel",
+			"Q - Quit",
+		}
 	}
 
 	return tview.NewTextView().
