@@ -154,12 +154,23 @@ func issuesView() tview.Primitive {
 		table.SetCell(row+1, 2, tview.NewTableCell(issue.CreatedAt.Format("2006-01-02")))
 	}
 
-	// Handle selection
-	table.Select(1, 0) // Select first row by default
+	// Handle selection - only allow selecting data rows, not the header
+	if len(filteredIssues) > 0 {
+		table.Select(1, 0) // Select first data row by default
+	}
+	
+	// Custom selection handler to prevent selecting header
+	table.SetSelectionChangedFunc(func(row, column int) {
+		// If header row is selected, move to first data row if available
+		if row == 0 && len(filteredIssues) > 0 {
+			table.Select(1, 0)
+		}
+	})
+	
 	table.SetSelectedFunc(func(row, column int) {
 		// Handle row selection (user pressed Enter on a row)
 		if row > 0 && row <= len(filteredIssues) {
-			// Could add action here in future
+			// Future: Open issue detail view or browser
 			logging.Info(fmt.Sprintf("Selected issue: %s", filteredIssues[row-1].Title))
 		}
 	})
