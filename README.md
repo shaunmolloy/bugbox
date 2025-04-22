@@ -1,6 +1,4 @@
-# BugBox
-
----
+# 🐛 BugBox
 
 1. [Background](#background)
 1. [Features](#features)
