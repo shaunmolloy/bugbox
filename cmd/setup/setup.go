@@ -2,7 +2,6 @@ package setup
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -27,10 +26,6 @@ func Setup() error {
 
 	handleGitHubToken(&conf)
 	handleGitHubOrgs(&conf)
-
-	// Dump conf to stdout
-	bytes, _ := json.MarshalIndent(conf, "", "  ")
-	fmt.Printf("Config: %s\n", string(bytes))
 
 	logging.Info("Saving config...")
 	if err := config.SaveConfig(conf); err != nil {
@@ -65,14 +60,20 @@ func clearTerminal() {
 }
 
 func handleGitHubToken(conf *config.Config) error {
-	fmt.Printf("\nEnter your GitHub personal access token: %s", conf.GitHubToken)
-	conf.GitHubToken = parseInput()
+	fmt.Printf("\nEnter your GitHub personal access token [%s]: ", conf.GitHubToken)
+	input := parseInput()
+	if input != "" {
+		conf.GitHubToken = input
+	}
 	return nil
 }
 
 func handleGitHubOrgs(conf *config.Config) error {
-	fmt.Printf("\nEnter GitHub org(s) to find issues from: %s", conf.Orgs)
-	conf.Orgs = strings.Split(parseInput(), " ")
+	fmt.Printf("\nEnter GitHub org(s) (space-separated) [%s]: ", strings.Join(conf.Orgs, " "))
+	input := strings.Split(parseInput(), " ")
+	if input != nil {
+		conf.Orgs = input
+	}
 	return nil
 }
 
