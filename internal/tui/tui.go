@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -11,6 +12,11 @@ import (
 
 // RefreshChan is a channel that receives signals to refresh the TUI
 var RefreshChan = make(chan struct{}, 1)
+
+// Global state for controlling UI elements
+var (
+	showSearch = false
+)
 
 // Start initializes and runs the TUI
 func Start() error {
@@ -46,12 +52,15 @@ func layout() tview.Primitive {
 
 	innerFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(issuesView(), 0, 1, false).
-		AddItem(orgsView(), 30, 0, true)
+		AddItem(orgsView(), 30, 0, false) // Only focus on orgs view if search is not showing
 
-	rootFlex.
-		AddItem(innerFlex, 0, 1, false).
-		AddItem(searchView(), 3, 0, true).
-		AddItem(shortcutsView(), 1, 0, false)
+	rootFlex.AddItem(innerFlex, 0, 1, !showSearch)
+	
+	if showSearch {
+		rootFlex.AddItem(searchView(), 3, 0, true) // Focus on search view when visible
+	}
+	
+	rootFlex.AddItem(shortcutsView(), 1, 0, false)
 
 	return rootFlex
 }
@@ -61,7 +70,17 @@ func handleKeyboardShortcuts(app *tview.Application) {
 		// If "q" is pressed, stop the application
 		if event.Key() == tcell.KeyRune && event.Rune() == 'q' {
 			app.Stop()
+			return nil
 		}
+		
+		// If "/" is pressed, toggle search view
+		if event.Key() == tcell.KeyRune && event.Rune() == '/' {
+			showSearch = !showSearch
+			// Use the existing refresh mechanism
+			RefreshChan <- struct{}{}
+			return nil // Consume the event
+		}
+		
 		return event
 	})
 }
@@ -113,10 +132,17 @@ func issuesView() tview.Primitive {
 
 func searchView() tview.Primitive {
 	searchField := tview.NewInputField().
-		SetPlaceholder("Search issues/orgs...").
+		SetPlaceholder("Search").
 		SetPlaceholderTextColor(tcell.ColorWhite).
 		SetFieldBackgroundColor(tcell.ColorBlue).
-		SetFieldTextColor(tcell.ColorWhite)
+		SetFieldTextColor(tcell.ColorWhite).
+		SetDoneFunc(func(key tcell.Key) {
+			// When user finishes input (hits Enter/Esc), hide the search view
+			if key == tcell.KeyEnter || key == tcell.KeyEscape {
+				showSearch = false
+				RefreshChan <- struct{}{} // Trigger a refresh
+			}
+		})
 
 	flex := tview.NewFlex()
 	flex.SetTitle("Search").SetBorder(true)
@@ -125,7 +151,12 @@ func searchView() tview.Primitive {
 }
 
 func shortcutsView() tview.Primitive {
+	shortcuts := []string{
+		"/ - Search",
+		"Q - Quit",
+	}
+
 	return tview.NewTextView().
-		SetText("Keyboard Shortcuts: Q - Quit").
+		SetText(strings.Join(shortcuts, ", ")).
 		SetTextAlign(tview.AlignCenter)
 }
