@@ -146,7 +146,8 @@ func searchView() tview.Primitive {
 	searchField := tview.NewInputField().
 		SetPlaceholder("Search").
 		SetPlaceholderTextColor(tcell.ColorWhite).
-		SetFieldBackgroundColor(tcell.ColorBlue).
+		SetPlaceholderStyle(tcell.StyleDefault.Background(tcell.Color238)).
+		SetFieldBackgroundColor(tcell.Color238).
 		SetFieldTextColor(tcell.ColorWhite).
 		SetDoneFunc(func(key tcell.Key) {
 			// When user finishes input (hits Enter/Esc), hide the search view
