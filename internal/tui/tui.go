@@ -18,9 +18,21 @@ var (
 	showSearch = false
 )
 
+// Init function to set up the global styles
+func init() {
+	// Set global styles to prevent focus highlighting
+	tview.Styles.PrimitiveBackgroundColor = tcell.ColorBlack
+	tview.Styles.BorderColor = tcell.ColorGrey
+	tview.Styles.TitleColor = tcell.ColorGrey
+	// tview.Styles.FocusColor = tcell.ColorWhite // This makes focus highlight same as regular borders
+}
+
 // Start initializes and runs the TUI
 func Start() error {
 	app := tview.NewApplication()
+	
+	// Disable mouse input
+	app.EnableMouse(false)
 
 	handleKeyboardShortcuts(app)
 
@@ -90,11 +102,12 @@ func orgsView() tview.Primitive {
 
 	table := tview.NewTable().SetFixed(1, 0)
 	for row, org := range conf.Orgs {
-		table.SetCell(row+1, 0, tview.NewTableCell(org))
+		table.SetCell(row+0, 0, tview.NewTableCell(org))
 	}
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
 	flex.SetTitle("Orgs").SetBorder(true)
+
 	flex.AddItem(table, 0, 1, false)
 	return flex
 }
@@ -145,7 +158,11 @@ func searchView() tview.Primitive {
 		})
 
 	flex := tview.NewFlex()
-	flex.SetTitle("Search").SetBorder(true)
+
+	flex.
+		SetTitle("Search").
+		SetTitleColor(tcell.ColorWhite)
+	
 	flex.AddItem(searchField, 0, 1, true)
 	return flex
 }
