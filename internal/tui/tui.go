@@ -49,7 +49,8 @@ func layout() tview.Primitive {
 		AddItem(orgsView(), 30, 0, true)
 
 	rootFlex.
-		AddItem(innerFlex, 0, 1, true).
+		AddItem(innerFlex, 0, 1, false).
+		AddItem(searchView(), 3, 0, true).
 		AddItem(shortcutsView(), 1, 0, false)
 
 	return rootFlex
@@ -68,12 +69,6 @@ func handleKeyboardShortcuts(app *tview.Application) {
 func orgsView() tview.Primitive {
 	conf, _ := config.LoadConfig()
 
-	searchField := tview.NewInputField().
-		SetPlaceholder("Search for org...").
-		SetPlaceholderTextColor(tcell.ColorWhite).
-		SetFieldBackgroundColor(tcell.ColorBlue).
-		SetFieldTextColor(tcell.ColorWhite)
-
 	table := tview.NewTable().SetFixed(1, 0)
 	for row, org := range conf.Orgs {
 		table.SetCell(row+1, 0, tview.NewTableCell(org))
@@ -81,7 +76,6 @@ func orgsView() tview.Primitive {
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
 	flex.SetTitle("Orgs").SetBorder(true)
-	flex.AddItem(searchField, 1, 1, true)
 	flex.AddItem(table, 0, 1, false)
 	return flex
 }
@@ -114,6 +108,19 @@ func issuesView() tview.Primitive {
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
 	flex.SetTitle("Issues").SetBorder(true)
 	flex.AddItem(table, 0, 1, true)
+	return flex
+}
+
+func searchView() tview.Primitive {
+	searchField := tview.NewInputField().
+		SetPlaceholder("Search issues/orgs...").
+		SetPlaceholderTextColor(tcell.ColorWhite).
+		SetFieldBackgroundColor(tcell.ColorBlue).
+		SetFieldTextColor(tcell.ColorWhite)
+
+	flex := tview.NewFlex()
+	flex.SetTitle("Search").SetBorder(true)
+	flex.AddItem(searchField, 0, 1, true)
 	return flex
 }
 
