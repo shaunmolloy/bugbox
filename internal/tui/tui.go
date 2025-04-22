@@ -2,6 +2,8 @@ package tui
 
 import (
 	"fmt"
+	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -15,7 +17,7 @@ var RefreshChan = make(chan struct{}, 1)
 
 // Global state for controlling UI elements
 var (
-	showSearch = false
+	showSearch  = false
 	searchQuery = ""
 )
 
@@ -30,7 +32,7 @@ func init() {
 // Start initializes and runs the TUI
 func Start() error {
 	app := tview.NewApplication()
-	
+
 	// Disable mouse input
 	app.EnableMouse(false)
 
@@ -67,11 +69,11 @@ func layout() tview.Primitive {
 		AddItem(orgsView(), 30, 0, false)
 
 	rootFlex.AddItem(innerFlex, 0, 1, !showSearch)
-	
+
 	if showSearch {
 		rootFlex.AddItem(searchView(), 1, 0, true) // Focus on search when visible
 	}
-	
+
 	rootFlex.AddItem(shortcutsView(), 1, 0, false)
 
 	return rootFlex
@@ -84,7 +86,7 @@ func handleKeyboardShortcuts(app *tview.Application) {
 			app.Stop()
 			return nil
 		}
-		
+
 		// If "/" is pressed, toggle search view
 		if event.Key() == tcell.KeyRune && event.Rune() == '/' {
 			showSearch = !showSearch
@@ -92,7 +94,7 @@ func handleKeyboardShortcuts(app *tview.Application) {
 			RefreshChan <- struct{}{}
 			return nil // Consume the event
 		}
-		
+
 		return event
 	})
 }
@@ -117,8 +119,8 @@ func issuesView() tview.Primitive {
 
 	// Create a selectable table
 	table := tview.NewTable().
-		SetFixed(1, 0).               // Lock header row
-		SetSelectable(true, false)    // Enable row selection only
+		SetFixed(1, 0).            // Lock header row
+		SetSelectable(true, false) // Enable row selection only
 
 	// Header row
 	headers := []string{"Title", "Org", "Created"}
@@ -158,7 +160,7 @@ func issuesView() tview.Primitive {
 	if len(filteredIssues) > 0 {
 		table.Select(1, 0) // Select first data row by default
 	}
-	
+
 	// Custom selection handler to prevent selecting header
 	table.SetSelectionChangedFunc(func(row, column int) {
 		// If header row is selected, move to first data row if available
@@ -166,12 +168,17 @@ func issuesView() tview.Primitive {
 			table.Select(1, 0)
 		}
 	})
-	
+
 	table.SetSelectedFunc(func(row, column int) {
 		// Handle row selection (user pressed Enter on a row)
 		if row > 0 && row <= len(filteredIssues) {
-			// Future: Open issue detail view or browser
-			logging.Info(fmt.Sprintf("Selected issue: %s", filteredIssues[row-1].Title))
+			issue := filteredIssues[row-1]
+			logging.Info(fmt.Sprintf("Opening issue in browser: %s", issue.Title))
+
+			// Open the issue URL in the default browser
+			if err := openBrowser(issue.URL); err != nil {
+				logging.Error(fmt.Sprintf("Failed to open browser: %v", err))
+			}
 		}
 	})
 
@@ -198,8 +205,6 @@ func searchView() tview.Primitive {
 		SetChangedFunc(func(text string) {
 			// Update search query as user types
 			searchQuery = text
-			// Refresh the UI to filter issues
-			RefreshChan <- struct{}{}
 		}).
 		SetDoneFunc(func(key tcell.Key) {
 			// When user finishes input (hits Enter/Esc), hide the search view
@@ -243,4 +248,21 @@ func shortcutsView() tview.Primitive {
 	return tview.NewTextView().
 		SetText(strings.Join(shortcuts, ", ")).
 		SetTextAlign(tview.AlignCenter)
+}
+
+func openBrowser(url string) error {
+	var cmd *exec.Cmd
+
+	switch runtime.GOOS {
+	case "linux":
+		cmd = exec.Command("xdg-open", url)
+	case "windows":
+		cmd = exec.Command("cmd", "/c", "start", url)
+	case "darwin":
+		cmd = exec.Command("open", url)
+	default:
+		return fmt.Errorf("unsupported platform")
+	}
+
+	return cmd.Start()
 }
