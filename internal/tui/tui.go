@@ -16,6 +16,7 @@ var RefreshChan = make(chan struct{}, 1)
 // Global state for controlling UI elements
 var (
 	showSearch = false
+	searchQuery = ""
 )
 
 // Init function to set up the global styles
@@ -123,9 +124,23 @@ func issuesView() tview.Primitive {
 		table.SetCell(0, i, cell)
 	}
 
+	// Filter issues based on searchQuery if it's not empty
+	filteredIssues := issues
+	if searchQuery != "" {
+		filteredIssues = nil
+		query := strings.ToLower(searchQuery)
+		for _, issue := range issues {
+			// Search in title and org
+			if strings.Contains(strings.ToLower(issue.Title), query) ||
+				strings.Contains(strings.ToLower(issue.Org), query) {
+				filteredIssues = append(filteredIssues, issue)
+			}
+		}
+	}
+
 	// Data rows
-	for row, issue := range issues {
-		// Truncate title to 50 characters if it's too long
+	for row, issue := range filteredIssues {
+		// Truncate title to 72 characters if it's too long
 		title := issue.Title
 		if len(title) > 72 {
 			title = title[:72] + "..."
@@ -136,8 +151,14 @@ func issuesView() tview.Primitive {
 		table.SetCell(row+1, 2, tview.NewTableCell(issue.CreatedAt.Format("2006-01-02")))
 	}
 
+	// Set title to indicate filtering
+	title := "Issues"
+	if len(filteredIssues) != len(issues) {
+		title = fmt.Sprintf("Issues (%d/%d)", len(filteredIssues), len(issues))
+	}
+
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-	flex.SetTitle("Issues").SetBorder(true)
+	flex.SetTitle(title).SetBorder(true)
 	flex.AddItem(table, 0, 1, true)
 	return flex
 }
@@ -149,9 +170,22 @@ func searchView() tview.Primitive {
 		SetPlaceholderStyle(tcell.StyleDefault.Background(tcell.Color238)).
 		SetFieldBackgroundColor(tcell.Color238).
 		SetFieldTextColor(tcell.ColorWhite).
+		SetText(searchQuery). // Initialize with current search query
+		SetChangedFunc(func(text string) {
+			// Update search query as user types
+			searchQuery = text
+			// Refresh the UI to filter issues
+			RefreshChan <- struct{}{}
+		}).
 		SetDoneFunc(func(key tcell.Key) {
 			// When user finishes input (hits Enter/Esc), hide the search view
-			if key == tcell.KeyEnter || key == tcell.KeyEscape {
+			if key == tcell.KeyEnter {
+				// Keep the current search query
+				showSearch = false
+				RefreshChan <- struct{}{} // Trigger a refresh
+			} else if key == tcell.KeyEscape {
+				// Clear search query
+				searchQuery = ""
 				showSearch = false
 				RefreshChan <- struct{}{} // Trigger a refresh
 			}
