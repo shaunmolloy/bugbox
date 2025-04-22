@@ -19,8 +19,19 @@ func Setup() error {
 
 	logging.Info("Starting setup")
 
-	handleGitHubToken()
-	handleGitHubOrgs()
+	conf, err := config.LoadConfig()
+	if err != nil {
+		conf = config.Config{} // fallback to default
+	}
+
+	handleGitHubToken(&conf)
+	handleGitHubOrgs(&conf)
+
+	logging.Info("Saving config...")
+	if err := config.SaveConfig(conf); err != nil {
+		logging.Error(fmt.Sprintf("Error saving config: %v\n", err))
+		return err
+	}
 
 	if err := config.Validate(); err != nil {
 		logging.Error(fmt.Sprintf("Config format is invalid: %v\n", err))
@@ -48,50 +59,30 @@ func clearTerminal() {
 	fmt.Print("\033[H\033[2J")
 }
 
-func handleGitHubToken() error {
-	fmt.Print("\nEnter your GitHub personal access token: ")
-
-	reader := bufio.NewReader(os.Stdin)
-	value, err := reader.ReadString('\n')
-	token := strings.TrimSpace(value)
-	if err != nil {
-		logging.Error(fmt.Sprintf("Error reading token: %v\n", err))
-		return err
-	}
-
-	conf, err := config.LoadConfig()
-	if err != nil {
-		conf = config.Config{} // fallback to default
-	}
-
-	conf.GitHubToken = token
-	if err := config.SaveConfig(conf); err != nil {
-		logging.Error(fmt.Sprintf("Error saving config: %v\n", err))
-		return err
+func handleGitHubToken(conf *config.Config) error {
+	fmt.Printf("\nEnter your GitHub personal access token [%s]: ", conf.GitHubToken)
+	input := parseInput()
+	if input != "" {
+		conf.GitHubToken = input
 	}
 	return nil
 }
 
-func handleGitHubOrgs() error {
-	fmt.Print("\nEnter GitHub org(s) to find issues from: ")
-
-	reader := bufio.NewReader(os.Stdin)
-	value, err := reader.ReadString('\n')
-	orgs := strings.Split(strings.TrimSpace(value), ",")
-	if err != nil {
-		logging.Error(fmt.Sprintf("Error reading orgs: %v\n", err))
-		return err
-	}
-
-	conf, err := config.LoadConfig()
-	if err != nil {
-		conf = config.Config{} // fallback to default
-	}
-
-	conf.Orgs = orgs
-	if err := config.SaveConfig(conf); err != nil {
-		logging.Error(fmt.Sprintf("Error saving config: %v\n", err))
-		return err
+func handleGitHubOrgs(conf *config.Config) error {
+	fmt.Printf("\nEnter GitHub org(s) (space-separated) [%s]: ", strings.Join(conf.Orgs, " "))
+	input := strings.Split(parseInput(), " ")
+	if len(input) > 0 && input[0] != "" {
+		conf.Orgs = input
 	}
 	return nil
+}
+
+func parseInput() string {
+	reader := bufio.NewReader(os.Stdin)
+	value, err := reader.ReadString('\n')
+	value = strings.TrimSpace(value)
+	if err != nil {
+		logging.Error(fmt.Sprintf("Error reading value: %v\n", err))
+	}
+	return value
 }
