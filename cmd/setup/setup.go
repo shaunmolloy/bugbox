@@ -71,7 +71,7 @@ func handleGitHubToken(conf *config.Config) error {
 func handleGitHubOrgs(conf *config.Config) error {
 	fmt.Printf("\nEnter GitHub org(s) (space-separated) [%s]: ", strings.Join(conf.Orgs, " "))
 	input := strings.Split(parseInput(), " ")
-	if input != nil {
+	if len(input) > 0 && input[0] != "" {
 		conf.Orgs = input
 	}
 	return nil
