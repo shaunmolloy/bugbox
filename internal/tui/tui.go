@@ -156,13 +156,12 @@ func searchView() tview.Primitive {
 			}
 		})
 
-	flex := tview.NewFlex()
+	// Create a flex with horizontal padding
+	flex := tview.NewFlex().
+		AddItem(nil, 1, 0, false). // Left padding
+		AddItem(searchField, 0, 1, true).
+		AddItem(nil, 1, 0, false) // Right padding
 
-	flex.
-		SetTitle("Search").
-		SetTitleColor(tcell.ColorWhite)
-	
-	flex.AddItem(searchField, 0, 1, true)
 	return flex
 }
 
