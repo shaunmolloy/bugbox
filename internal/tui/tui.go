@@ -63,13 +63,13 @@ func layout() tview.Primitive {
 	rootFlex := tview.NewFlex().SetDirection(tview.FlexRow)
 
 	innerFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(issuesView(), 0, 1, false).
-		AddItem(orgsView(), 30, 0, false) // Only focus on orgs view if search is not showing
+		AddItem(issuesView(), 0, 1, !showSearch). // Focus on issues when search is hidden
+		AddItem(orgsView(), 30, 0, false)
 
 	rootFlex.AddItem(innerFlex, 0, 1, !showSearch)
 	
 	if showSearch {
-		rootFlex.AddItem(searchView(), 1, 0, true) // Reduced height from 3 to 1
+		rootFlex.AddItem(searchView(), 1, 0, true) // Focus on search when visible
 	}
 	
 	rootFlex.AddItem(shortcutsView(), 1, 0, false)
@@ -115,7 +115,10 @@ func orgsView() tview.Primitive {
 func issuesView() tview.Primitive {
 	issues, _ := config.LoadIssues()
 
-	table := tview.NewTable().SetFixed(1, 0) // lock header row
+	// Create a selectable table
+	table := tview.NewTable().
+		SetFixed(1, 0).               // Lock header row
+		SetSelectable(true, false)    // Enable row selection only
 
 	// Header row
 	headers := []string{"Title", "Org", "Created"}
@@ -150,6 +153,16 @@ func issuesView() tview.Primitive {
 		table.SetCell(row+1, 1, tview.NewTableCell(issue.Org))
 		table.SetCell(row+1, 2, tview.NewTableCell(issue.CreatedAt.Format("2006-01-02")))
 	}
+
+	// Handle selection
+	table.Select(1, 0) // Select first row by default
+	table.SetSelectedFunc(func(row, column int) {
+		// Handle row selection (user pressed Enter on a row)
+		if row > 0 && row <= len(filteredIssues) {
+			// Could add action here in future
+			logging.Info(fmt.Sprintf("Selected issue: %s", filteredIssues[row-1].Title))
+		}
+	})
 
 	// Set title to indicate filtering
 	title := "Issues"
@@ -202,6 +215,8 @@ func searchView() tview.Primitive {
 
 func shortcutsView() tview.Primitive {
 	shortcuts := []string{
+		"↑↓ - Navigate",
+		"Enter - Open",
 		"/ - Search",
 		"Q - Quit",
 	}
