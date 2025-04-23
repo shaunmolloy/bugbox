@@ -11,12 +11,13 @@ import (
 
 // FetchIssues starts a goroutine that polls for GitHub issues every minute
 func FetchIssues() {
-	// Fetch when app starts
-	handleGitHub()
-
-	// Fetch every minute
-	ticker := time.NewTicker(1 * time.Minute)
 	go func() {
+		// Wait 5 seconds before initial fetch to improve startup time
+		time.Sleep(5 * time.Second)
+		handleGitHub()
+
+		// Then fetch every minute
+		ticker := time.NewTicker(1 * time.Minute)
 		for range ticker.C {
 			handleGitHub()
 		}
