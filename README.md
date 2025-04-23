@@ -36,7 +36,7 @@ The aim for this project is to track and manage issues across multiple GitHub or
 ### Recommended
 
 ```bash
-go install github.com/yourusername/bugbox@latest
+go install github.com/shaunmolloy/bugbox@latest
 ```
 
 ---
