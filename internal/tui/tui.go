@@ -63,7 +63,6 @@ func Start() error {
 		width, _ := screen.Size()
 		currentScreenWidth = width
 
-		// If width crosses our breakpoint of 130, refresh the layout
 		if width != lastWidth {
 			RefreshChan <- struct{}{} // Trigger a refresh
 		}
