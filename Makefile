@@ -6,7 +6,7 @@ all: build
 
 build:
 	@echo "Building..."
-	$(GO) build -o $(APP_NAME) cmd/main/main.go
+	$(GO) build -o $(APP_NAME) main.go
 
 run: build
 	@echo "Running the application..."

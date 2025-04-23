@@ -119,8 +119,8 @@ func issuesView() tview.Primitive {
 
 	// Create a selectable table
 	table := tview.NewTable().
-		SetFixed(1, 0).               // Lock header row
-		SetSelectable(true, false)    // Enable row selection only
+		SetFixed(1, 0).            // Lock header row
+		SetSelectable(true, false) // Enable row selection only
 
 	// Define column widths - use expansion to control the width ratios
 	colExpansions := []int{8, 1, 1} // Title takes 80%, Org and Created take 10% each
