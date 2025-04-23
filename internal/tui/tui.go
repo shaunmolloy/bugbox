@@ -40,7 +40,7 @@ func Start() error {
 	// Go routine for refresh handler and resize handler
 	go func() {
 		for range RefreshChan {
-			logging.Info("Refreshing TUI with updated issues")
+			logging.Info("Refreshing TUI")
 			app.QueueUpdateDraw(func() {
 				// Replace the layout with a refreshed one
 				newLayout := layout()
