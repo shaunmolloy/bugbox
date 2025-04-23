@@ -17,8 +17,17 @@ var RefreshChan = make(chan struct{}, 1)
 
 // Global state for controlling UI elements
 var (
-	showSearch  = false
-	searchQuery = ""
+	showSearch         = false
+	searchQuery        = ""
+	useVerticalLayout  = false
+	currentScreenWidth = 0
+)
+
+const (
+	breakpointSmall  = 72
+	breakpointXSmall = 100
+	breakpointMedium = 130
+	breakpointLarge  = 180
 )
 
 // Init function to set up the global styles
@@ -32,19 +41,14 @@ func init() {
 // Start initializes and runs the TUI
 func Start() error {
 	app := tview.NewApplication()
-
-	// Disable mouse input
-	app.EnableMouse(false)
+	app.EnableMouse(false) // Disable mouse input
 
 	handleKeyboardShortcuts(app)
 
-	// Create the initial layout
-	rootFlex := layout()
-
-	// Set up refresh handler
+	// Go routine for refresh handler and resize handler
 	go func() {
 		for range RefreshChan {
-			logging.Info("Refreshing TUI with updated issues")
+			logging.Info(fmt.Sprintf("Refreshing TUI. Width: %d", currentScreenWidth))
 			app.QueueUpdateDraw(func() {
 				// Replace the layout with a refreshed one
 				newLayout := layout()
@@ -52,6 +56,23 @@ func Start() error {
 			})
 		}
 	}()
+
+	// Create a handler for terminal resize events
+	var lastWidth int
+	app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
+		width, _ := screen.Size()
+		currentScreenWidth = width
+
+		if width != lastWidth {
+			RefreshChan <- struct{}{} // Trigger a refresh
+		}
+
+		lastWidth = width
+		return false // Allow normal drawing
+	})
+
+	// Create the initial layout
+	rootFlex := layout()
 
 	if err := app.SetRoot(rootFlex, true).Run(); err != nil {
 		logging.Error(fmt.Sprintf("Error: Failed to run TUI: %v", err))
@@ -64,18 +85,27 @@ func Start() error {
 func layout() tview.Primitive {
 	rootFlex := tview.NewFlex().SetDirection(tview.FlexRow)
 
-	innerFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(issuesView(), 0, 1, !showSearch). // Focus on issues when search is hidden
-		AddItem(orgsView(), 30, 0, false)
+	// Use vertical layout for small screens
+	useVerticalLayout = currentScreenWidth < breakpointMedium
 
-	rootFlex.AddItem(innerFlex, 0, 1, !showSearch)
+	if useVerticalLayout {
+		// Vertical layout for small screens
+		rootFlex.AddItem(issuesView(), 0, 3, !showSearch) // Issues take 3/4 of height
+		rootFlex.AddItem(orgsView(), 0, 1, false)         // Orgs take 1/4 of height
+	} else {
+		// Default horizontal layout for wider screens
+		innerFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(issuesView(), 0, 1, !showSearch). // Focus on issues when search is hidden
+			AddItem(orgsView(), 30, 0, false)         // Orgs take fixed 30 columns
+
+		rootFlex.AddItem(innerFlex, 0, 1, !showSearch)
+	}
 
 	if showSearch {
 		rootFlex.AddItem(searchView(), 1, 0, true) // Focus on search when visible
 	}
 
 	rootFlex.AddItem(shortcutsView(), 1, 0, false)
-
 	return rootFlex
 }
 
@@ -150,10 +180,24 @@ func issuesView() tview.Primitive {
 
 	// Data rows
 	for row, issue := range filteredIssues {
-		// Truncate title to 72 characters if it's too long
+		// Truncate title based on screen width
 		title := issue.Title
-		if len(title) > 72 {
-			title = title[:72] + "..."
+		switch {
+		case currentScreenWidth < breakpointSmall && len(title) > 30:
+			title = title[:30]
+			break
+		case currentScreenWidth < breakpointXSmall && len(title) > 50:
+			title = title[:50]
+			break
+		case currentScreenWidth < breakpointMedium && len(title) > 72:
+			title = title[:72]
+			break
+		case currentScreenWidth < breakpointLarge && len(title) > 100:
+			title = title[:100]
+			break
+		case len(title) > 120:
+			title = title[:120]
+			break
 		}
 
 		table.SetCell(row+1, 0, tview.NewTableCell(title))
