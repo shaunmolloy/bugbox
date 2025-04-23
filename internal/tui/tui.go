@@ -19,7 +19,15 @@ var RefreshChan = make(chan struct{}, 1)
 var (
 	showSearch         = false
 	searchQuery        = ""
+	useVerticalLayout  = false
 	currentScreenWidth = 0
+)
+
+const (
+	breakpointSmall  = 72
+	breakpointXSmall = 100
+	breakpointMedium = 130
+	breakpointLarge  = 180
 )
 
 // Init function to set up the global styles
@@ -40,7 +48,7 @@ func Start() error {
 	// Go routine for refresh handler and resize handler
 	go func() {
 		for range RefreshChan {
-			logging.Info("Refreshing TUI")
+			logging.Info(fmt.Sprintf("Refreshing TUI. Width: %d", currentScreenWidth))
 			app.QueueUpdateDraw(func() {
 				// Replace the layout with a refreshed one
 				newLayout := layout()
@@ -79,10 +87,7 @@ func layout() tview.Primitive {
 	rootFlex := tview.NewFlex().SetDirection(tview.FlexRow)
 
 	// Use vertical layout for small screens
-	useVerticalLayout := false
-	if currentScreenWidth < 130 {
-		useVerticalLayout = true
-	}
+	useVerticalLayout = currentScreenWidth < breakpointMedium
 
 	if useVerticalLayout {
 		// Vertical layout for small screens
@@ -176,10 +181,24 @@ func issuesView() tview.Primitive {
 
 	// Data rows
 	for row, issue := range filteredIssues {
-		// Truncate title to 72 characters if it's too long
+		// Truncate title based on screen width
 		title := issue.Title
-		if len(title) > 72 {
-			title = title[:72] + "..."
+		switch {
+		case currentScreenWidth < breakpointSmall && len(title) > 30:
+			title = title[:30]
+			break
+		case currentScreenWidth < breakpointXSmall && len(title) > 50:
+			title = title[:50]
+			break
+		case currentScreenWidth < breakpointMedium && len(title) > 72:
+			title = title[:72]
+			break
+		case currentScreenWidth < breakpointLarge && len(title) > 100:
+			title = title[:100]
+			break
+		case len(title) > 120:
+			title = title[:120]
+			break
 		}
 
 		table.SetCell(row+1, 0, tview.NewTableCell(title))
