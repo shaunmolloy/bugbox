@@ -12,9 +12,16 @@
 
 ## Background
 
-BugBox: Git issue inbox from your terminal.
+Git issue inbox from your terminal.
 
-The aim for this project is to track and manage issues across multiple GitHub organizations and repositories.
+Quickly view and manage GitHub issues across multiple organizations and repositories.
+
+> [!NOTE]  
+> This project is in early development.
+
+---
+
+![Screenshot](./screenshot.png)
 
 ---
 
