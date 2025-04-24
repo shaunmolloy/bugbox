@@ -319,6 +319,7 @@ func searchView() tview.Primitive {
 		SetChangedFunc(func(text string) {
 			// Update search query as user types
 			searchQuery = text
+			RefreshChan <- struct{}{} // Trigger a refresh
 		}).
 		SetDoneFunc(func(key tcell.Key) {
 			// When user finishes input (hits Enter/Esc), hide the search view
