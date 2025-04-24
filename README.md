@@ -2,6 +2,7 @@
 
 1. [Background](#background)
 1. [Features](#features)
+1. [Preview](#preview)
 1. [Install](#install)
 1. [Usage](#usage)
 1. [Configuration](#configuration)
@@ -21,10 +22,6 @@ Quickly view and manage GitHub issues across multiple organizations and reposito
 
 ---
 
-![Screenshot](./screenshot.png)
-
----
-
 ## Features
 
 - **List all issues**: Quickly view GitHub issues across multiple orgs and repos.
@@ -35,6 +32,12 @@ Quickly view and manage GitHub issues across multiple organizations and reposito
 ### Coming soon
 
 - **Filter Issues by Org**: Supports filtering issues by GitHub organization names.
+
+---
+
+## Preview
+
+![Screenshot](./screenshot.png)
 
 ---
 
