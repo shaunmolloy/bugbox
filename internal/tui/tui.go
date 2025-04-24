@@ -21,6 +21,10 @@ var (
 	searchQuery        = ""
 	useVerticalLayout  = false
 	currentScreenWidth = 0
+	// Colors
+	primaryColor   = tcell.ColorLimeGreen
+	secondaryColor = tcell.ColorDarkOliveGreen
+	grayColor      = tcell.ColorDarkGray
 )
 
 const (
@@ -138,7 +142,7 @@ func orgsView() tview.Primitive {
 	}
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-	flex.SetTitle("Orgs").SetBorder(true)
+	flex.SetTitle("Orgs").SetTitleColor(primaryColor).SetBorder(true)
 
 	flex.AddItem(table, 0, 1, false)
 	return flex
@@ -238,7 +242,7 @@ func issuesView() tview.Primitive {
 	}
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-	flex.SetTitle(title).SetBorder(true)
+	flex.SetTitle(title).SetTitleColor(primaryColor).SetBorder(true)
 	flex.AddItem(table, 0, 1, true)
 	return flex
 }
@@ -295,8 +299,9 @@ func shortcutsView() tview.Primitive {
 	}
 
 	return tview.NewTextView().
-		SetText(strings.Join(shortcuts, ", ")).
-		SetTextAlign(tview.AlignCenter)
+		SetText(strings.Join(shortcuts, "    |    ")).
+		SetTextAlign(tview.AlignCenter).
+		SetTextColor(grayColor)
 }
 
 func openBrowser(url string) error {
