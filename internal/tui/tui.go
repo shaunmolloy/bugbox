@@ -181,7 +181,8 @@ func orgsView() tview.Primitive {
 		cell := tview.NewTableCell(org)
 		if org == orgFilter {
 			cell.SetBackgroundColor(tcell.ColorWhite).
-				SetTextColor(tcell.ColorBlack)
+				SetTextColor(tcell.ColorBlack).
+				SetExpansion(1)
 		}
 		table.SetCell(row+0, 0, cell)
 	}
