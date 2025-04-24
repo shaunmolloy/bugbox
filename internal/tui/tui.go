@@ -187,8 +187,11 @@ func orgsView() tview.Primitive {
 		table.SetCell(row+0, 0, cell)
 	}
 
+	// Set title to indicate filtering
+	title := fmt.Sprintf("Orgs (%d)", len(conf.Orgs))
+
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-	flex.SetTitle("Orgs").SetTitleColor(primaryColor).SetBorder(true)
+	flex.SetTitle(title).SetTitleColor(primaryColor).SetBorder(true)
 
 	flex.AddItem(table, 0, 1, false)
 	return flex
@@ -298,7 +301,7 @@ func issuesView() tview.Primitive {
 	})
 
 	// Set title to indicate filtering
-	title := "Issues"
+	title := fmt.Sprintf("Issues (%d)", len(filteredIssues))
 	if len(filteredIssues) != len(issues) {
 		title = fmt.Sprintf("Issues (%d/%d)", len(filteredIssues), len(issues))
 	}
