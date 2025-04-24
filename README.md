@@ -2,6 +2,7 @@
 
 1. [Background](#background)
 1. [Features](#features)
+1. [Preview](#preview)
 1. [Install](#install)
 1. [Usage](#usage)
 1. [Configuration](#configuration)
@@ -12,9 +13,12 @@
 
 ## Background
 
-BugBox: Git issue inbox from your terminal.
+Git issue inbox from your terminal.
 
-The aim for this project is to track and manage issues across multiple GitHub organizations and repositories.
+Quickly view and manage GitHub issues across multiple organizations and repositories.
+
+> [!NOTE]  
+> This project is in early development.
 
 ---
 
@@ -28,6 +32,12 @@ The aim for this project is to track and manage issues across multiple GitHub or
 ### Coming soon
 
 - **Filter Issues by Org**: Supports filtering issues by GitHub organization names.
+
+---
+
+## Preview
+
+![Screenshot](./screenshot.png)
 
 ---
 
