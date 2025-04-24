@@ -17,8 +17,10 @@ var RefreshChan = make(chan struct{}, 1)
 
 // Global state for controlling UI elements
 var (
+	conf, _            = config.LoadConfig()
 	showSearch         = false
 	searchQuery        = ""
+	orgFilter          = ""
 	useVerticalLayout  = false
 	currentScreenWidth = 0
 	// Colors
@@ -129,16 +131,59 @@ func handleKeyboardShortcuts(app *tview.Application) {
 			return nil // Consume the event
 		}
 
+		// If "Tab" is pressed, filter by next org
+		if event.Key() == tcell.KeyTab && !showSearch {
+			cycleOrgFilter()
+			logging.Info(fmt.Sprintf("Filtering by org: %s", fallback(orgFilter, "(none)")))
+			RefreshChan <- struct{}{}
+			return nil // Consume the event
+		}
+
+		// If "Esc" is pressed, clear the org filter
+		if event.Key() == tcell.KeyEscape && orgFilter != "" {
+			orgFilter = ""
+			logging.Info("Clearing org filter")
+			RefreshChan <- struct{}{}
+			return nil // Consume the event
+		}
+
 		return event
 	})
 }
 
-func orgsView() tview.Primitive {
-	conf, _ := config.LoadConfig()
+func cycleOrgFilter() {
+	if len(conf.Orgs) == 0 {
+		return
+	}
 
+	// If orgFilter is empty, set it to the first org
+	if orgFilter == "" {
+		orgFilter = conf.Orgs[0]
+		return
+	}
+
+	// Find the index of the current orgFilter
+	index := indexOf(conf.Orgs, orgFilter)
+
+	// Can we switch to the next org?
+	if index+1 < len(conf.Orgs) {
+		orgFilter = conf.Orgs[index+1]
+		return
+	}
+
+	// If orgFilter was last org, reset to empty
+	orgFilter = ""
+}
+
+func orgsView() tview.Primitive {
 	table := tview.NewTable().SetFixed(1, 0)
 	for row, org := range conf.Orgs {
-		table.SetCell(row+0, 0, tview.NewTableCell(org))
+		cell := tview.NewTableCell(org)
+		if org == orgFilter {
+			cell.SetBackgroundColor(tcell.ColorWhite).
+				SetTextColor(tcell.ColorBlack)
+		}
+		table.SetCell(row+0, 0, cell)
 	}
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
@@ -168,15 +213,31 @@ func issuesView() tview.Primitive {
 		table.SetCell(0, i, cell)
 	}
 
-	// Filter issues based on searchQuery if it's not empty
+	// Filter issues based on searchQuery and orgFilter
 	filteredIssues := issues
-	if searchQuery != "" {
+
+	// Apply filters
+	if searchQuery != "" || orgFilter != "" {
 		filteredIssues = nil
 		query := strings.ToLower(searchQuery)
 		for _, issue := range issues {
-			// Search in title and org
-			if strings.Contains(strings.ToLower(issue.Title), query) ||
-				strings.Contains(strings.ToLower(issue.Org), query) {
+			// Check if issue matches all active filters
+			matchesSearch := true
+			matchesOrg := true
+
+			// Apply search filter if active
+			if searchQuery != "" {
+				matchesSearch = strings.Contains(strings.ToLower(issue.Title), query) ||
+					strings.Contains(strings.ToLower(issue.Org), query)
+			}
+
+			// Apply org filter if active
+			if orgFilter != "" {
+				matchesOrg = issue.Org == orgFilter
+			}
+
+			// Add issue if it matches all active filters
+			if matchesSearch && matchesOrg {
 				filteredIssues = append(filteredIssues, issue)
 			}
 		}
@@ -287,6 +348,7 @@ func shortcutsView() tview.Primitive {
 		"↑↓ - Navigate",
 		"Enter - Open",
 		"/ - Search",
+		"Tab - Next Org",
 		"Q - Quit",
 	}
 
