@@ -17,10 +17,16 @@ var RefreshChan = make(chan struct{}, 1)
 
 // Global state for controlling UI elements
 var (
+	conf, _            = config.LoadConfig()
 	showSearch         = false
 	searchQuery        = ""
+	orgFilter          = ""
 	useVerticalLayout  = false
 	currentScreenWidth = 0
+	// Colors
+	primaryColor   = tcell.ColorLimeGreen
+	secondaryColor = tcell.ColorDarkOliveGreen
+	grayColor      = tcell.ColorDarkGray
 )
 
 const (
@@ -125,20 +131,67 @@ func handleKeyboardShortcuts(app *tview.Application) {
 			return nil // Consume the event
 		}
 
+		// If "Tab" is pressed, filter by next org
+		if event.Key() == tcell.KeyTab && !showSearch {
+			cycleOrgFilter()
+			logging.Info(fmt.Sprintf("Filtering by org: %s", fallback(orgFilter, "(none)")))
+			RefreshChan <- struct{}{}
+			return nil // Consume the event
+		}
+
+		// If "Esc" is pressed, clear the org filter
+		if event.Key() == tcell.KeyEscape && orgFilter != "" {
+			orgFilter = ""
+			logging.Info("Clearing org filter")
+			RefreshChan <- struct{}{}
+			return nil // Consume the event
+		}
+
 		return event
 	})
 }
 
-func orgsView() tview.Primitive {
-	conf, _ := config.LoadConfig()
-
-	table := tview.NewTable().SetFixed(1, 0)
-	for row, org := range conf.Orgs {
-		table.SetCell(row+0, 0, tview.NewTableCell(org))
+func cycleOrgFilter() {
+	if len(conf.Orgs) == 0 {
+		return
 	}
 
+	// If orgFilter is empty, set it to the first org
+	if orgFilter == "" {
+		orgFilter = conf.Orgs[0]
+		return
+	}
+
+	// Find the index of the current orgFilter
+	index := indexOf(conf.Orgs, orgFilter)
+
+	// Can we switch to the next org?
+	if index+1 < len(conf.Orgs) {
+		orgFilter = conf.Orgs[index+1]
+		return
+	}
+
+	// If orgFilter was last org, reset to empty
+	orgFilter = ""
+}
+
+func orgsView() tview.Primitive {
+	table := tview.NewTable().SetFixed(1, 0)
+	for row, org := range conf.Orgs {
+		cell := tview.NewTableCell(org)
+		if org == orgFilter {
+			cell.SetBackgroundColor(tcell.ColorWhite).
+				SetTextColor(tcell.ColorBlack).
+				SetExpansion(1)
+		}
+		table.SetCell(row+0, 0, cell)
+	}
+
+	// Set title to indicate filtering
+	title := fmt.Sprintf("Orgs (%d)", len(conf.Orgs))
+
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-	flex.SetTitle("Orgs").SetBorder(true)
+	flex.SetTitle(title).SetTitleColor(primaryColor).SetBorder(true)
 
 	flex.AddItem(table, 0, 1, false)
 	return flex
@@ -164,15 +217,31 @@ func issuesView() tview.Primitive {
 		table.SetCell(0, i, cell)
 	}
 
-	// Filter issues based on searchQuery if it's not empty
+	// Filter issues based on searchQuery and orgFilter
 	filteredIssues := issues
-	if searchQuery != "" {
+
+	// Apply filters
+	if searchQuery != "" || orgFilter != "" {
 		filteredIssues = nil
 		query := strings.ToLower(searchQuery)
 		for _, issue := range issues {
-			// Search in title and org
-			if strings.Contains(strings.ToLower(issue.Title), query) ||
-				strings.Contains(strings.ToLower(issue.Org), query) {
+			// Check if issue matches all active filters
+			matchesSearch := true
+			matchesOrg := true
+
+			// Apply search filter if active
+			if searchQuery != "" {
+				matchesSearch = strings.Contains(strings.ToLower(issue.Title), query) ||
+					strings.Contains(strings.ToLower(issue.Org), query)
+			}
+
+			// Apply org filter if active
+			if orgFilter != "" {
+				matchesOrg = issue.Org == orgFilter
+			}
+
+			// Add issue if it matches all active filters
+			if matchesSearch && matchesOrg {
 				filteredIssues = append(filteredIssues, issue)
 			}
 		}
@@ -232,13 +301,13 @@ func issuesView() tview.Primitive {
 	})
 
 	// Set title to indicate filtering
-	title := "Issues"
+	title := fmt.Sprintf("Issues (%d)", len(filteredIssues))
 	if len(filteredIssues) != len(issues) {
 		title = fmt.Sprintf("Issues (%d/%d)", len(filteredIssues), len(issues))
 	}
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-	flex.SetTitle(title).SetBorder(true)
+	flex.SetTitle(title).SetTitleColor(primaryColor).SetBorder(true)
 	flex.AddItem(table, 0, 1, true)
 	return flex
 }
@@ -254,6 +323,7 @@ func searchView() tview.Primitive {
 		SetChangedFunc(func(text string) {
 			// Update search query as user types
 			searchQuery = text
+			RefreshChan <- struct{}{} // Trigger a refresh
 		}).
 		SetDoneFunc(func(key tcell.Key) {
 			// When user finishes input (hits Enter/Esc), hide the search view
@@ -283,6 +353,7 @@ func shortcutsView() tview.Primitive {
 		"↑↓ - Navigate",
 		"Enter - Open",
 		"/ - Search",
+		"Tab - Next Org",
 		"Q - Quit",
 	}
 
@@ -295,8 +366,9 @@ func shortcutsView() tview.Primitive {
 	}
 
 	return tview.NewTextView().
-		SetText(strings.Join(shortcuts, ", ")).
-		SetTextAlign(tview.AlignCenter)
+		SetText(strings.Join(shortcuts, "    |    ")).
+		SetTextAlign(tview.AlignCenter).
+		SetTextColor(grayColor)
 }
 
 func openBrowser(url string) error {
