@@ -5,6 +5,7 @@ import "time"
 type Issue struct {
 	ID        int       `json:"number"`
 	Org       string    `json:"org"`
+	Repo      string    `json:"repo"`
 	Title     string    `json:"title"`
 	URL       string    `json:"html_url"`
 	Labels    []Label   `json:"labels"`
