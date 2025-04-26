@@ -199,6 +199,7 @@ func orgsView() tview.Primitive {
 
 func issuesView() tview.Primitive {
 	issues, _ := config.LoadIssues()
+	sortIssues(issues)
 
 	// Create a selectable table
 	table := tview.NewTable().
@@ -226,9 +227,6 @@ func issuesView() tview.Primitive {
 			SetExpansion(colExpansions[i])
 		table.SetCell(0, i, cell)
 	}
-
-	// Sort issues by created, org, repo
-	sortByCreated(issues)
 
 	// Filter issues based on searchQuery and orgFilter
 	filteredIssues := issues
