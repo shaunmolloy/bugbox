@@ -10,6 +10,7 @@ import (
 	"github.com/rivo/tview"
 	"github.com/shaunmolloy/bugbox/internal/logging"
 	"github.com/shaunmolloy/bugbox/internal/storage/config"
+	"github.com/shaunmolloy/bugbox/internal/utils"
 )
 
 // RefreshChan is a channel that receives signals to refresh the TUI
@@ -285,7 +286,8 @@ func issuesView() tview.Primitive {
 			cells = append(cells, tview.NewTableCell(issue.Repo))
 		}
 
-		cells = append(cells, tview.NewTableCell(issue.CreatedAt.Format("2006-01-02")))
+		createdAt := utils.RelativeTime(issue.CreatedAt)
+		cells = append(cells, tview.NewTableCell(createdAt))
 
 		for col, cell := range cells {
 			table.SetCell(row+1, col, cell)
