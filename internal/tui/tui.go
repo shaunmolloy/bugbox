@@ -268,9 +268,15 @@ func issuesView() tview.Primitive {
 			title = title[:50]
 			break
 		case currentScreenWidth < breakpointLarge:
-			if len(title) > 72 { title = title[:72] }
-			if len(issue.Org) > 15 { issue.Org = issue.Org[:15] }
-			if len(issue.Repo) > 15 { issue.Repo = issue.Repo[:15] }
+			if len(title) > 72 {
+				title = title[:72]
+			}
+			if len(issue.Org) > 15 {
+				issue.Org = issue.Org[:15]
+			}
+			if len(issue.Repo) > 15 {
+				issue.Repo = issue.Repo[:15]
+			}
 			break
 		case len(title) > 120:
 			title = title[:120]
@@ -323,13 +329,14 @@ func issuesView() tview.Primitive {
 
 			// Mark issue as read
 			issue.Read = true
-			issues[row-1] = issue // Update the original issues slice
+			issues[row-1] = issue     // Update the original issues slice
 			RefreshChan <- struct{}{} // Trigger a refresh
 
 			// Save the updated issues back to the config
 			if err := config.SaveIssues(issues); err != nil {
 				logging.Error(fmt.Sprintf("Failed to save issues: %v", err))
 			}
+			logging.Info("Saved issues to config")
 		}
 	})
 

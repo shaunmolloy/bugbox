@@ -1,6 +1,11 @@
 package github
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/shaunmolloy/bugbox/internal/types"
+)
 
 // parseRepo extracts the repository name from html_url.
 func parseRepo(url string) string {
@@ -12,4 +17,9 @@ func parseRepo(url string) string {
 		return parts[2]
 	}
 	return ""
+}
+
+// getIssueKey returns a unique key for the issue.
+func getIssueKey(i types.Issue) string {
+	return fmt.Sprintf("%s|%s|%d", i.Org, i.Repo, i.ID)
 }
