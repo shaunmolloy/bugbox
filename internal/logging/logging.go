@@ -33,6 +33,13 @@ func Info(message string) {
 	}
 }
 
+// Debug logs a debug-level message
+func Debug(message string) {
+	if Logger != nil {
+		Logger.Println("[DEBUG] " + message)
+	}
+}
+
 // Error logs an error-level message
 func Error(message string) {
 	if Logger != nil {

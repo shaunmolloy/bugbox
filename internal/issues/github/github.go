@@ -70,7 +70,7 @@ func FetchIssues(owner string, fetchAll bool) ([]types.Issue, error) {
 
 	for {
 		api := fmt.Sprintf("%s/search/issues?q=%s&per_page=100&page=%d", baseURL, encodedQuery, page)
-		logging.Info(fmt.Sprintf("Fetching %s", api))
+		logging.Debug(fmt.Sprintf("Fetching %s", api))
 		req, err := http.NewRequest("GET", api, nil)
 		if err != nil {
 			return nil, fmt.Errorf("creating request: %w", err)
