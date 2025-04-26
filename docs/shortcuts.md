@@ -6,7 +6,7 @@ The BugBox TUI supports the following keyboard shortcuts:
 
 | Key       | Action               | Description                        |
 |-----------|----------------------|------------------------------------|
-| ¿¿        | Navigate             | Move up/down in the issues list    |
+| Up/Down   | Navigate             | Move up/down in the issues list    |
 | Enter     | Open                 | Open selected issue in browser     |
 | /         | Search               | Toggle search mode                 |
 | Tab       | Next Org             | Cycle through organization filters |
