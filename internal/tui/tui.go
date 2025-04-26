@@ -266,11 +266,10 @@ func issuesView() tview.Primitive {
 		case currentScreenWidth < breakpointXSmall && len(title) > 50:
 			title = title[:50]
 			break
-		case currentScreenWidth < breakpointMedium && len(title) > 72:
-			title = title[:72]
-			break
-		case currentScreenWidth < breakpointLarge && len(title) > 100:
-			title = title[:100]
+		case currentScreenWidth < breakpointLarge:
+			if len(title) > 72 { title = title[:72] }
+			if len(issue.Org) > 15 { issue.Org = issue.Org[:15] }
+			if len(issue.Repo) > 15 { issue.Repo = issue.Repo[:15] }
 			break
 		case len(title) > 120:
 			title = title[:120]
