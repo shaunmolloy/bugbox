@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+
+	"github.com/shaunmolloy/bugbox/internal/types"
 )
 
 // IsExist returns true if path exists
@@ -40,4 +42,19 @@ func SaveToFile(path string, data any) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(data)
+}
+
+// FlattenIssues converts the hierarchical issue structure to a flat slice
+func FlattenIssues(issues Issues) []types.Issue {
+	var flat []types.Issue
+
+	for _, repoMap := range issues {
+		for _, issueMap := range repoMap {
+			for _, issue := range issueMap {
+				flat = append(flat, issue)
+			}
+		}
+	}
+
+	return flat
 }

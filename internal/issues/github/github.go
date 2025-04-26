@@ -15,38 +15,40 @@ const baseURL = "https://api.github.com"
 
 func FetchAllIssues(fetchAll bool) error {
 	conf, _ := config.LoadConfig()
-	issuesConf := config.Issues{} // Initialize an empty Issues slice
 
 	// Load existing issues
-	existingIssues, err := config.LoadIssues()
+	issuesConf, err := config.LoadIssues()
 	if err != nil {
+		issuesConf = config.Issues{} // Initialize an empty Issues map
 		logging.Error(fmt.Sprintf("Error loading existing issues: %v", err))
-		return err
-	}
-
-	// Index existing issues by "Org|Repo|ID"
-	existing := make(map[string]types.Issue)
-	for _, i := range existingIssues {
-		i.Repo = parseRepo(i.URL)
-		key := getIssueKey(i)
-		existing[key] = i
 	}
 
 	for _, org := range conf.Orgs {
 		issues, err := FetchIssues(org, fetchAll)
 		if err != nil {
 			logging.Error(fmt.Sprintf("Error fetching issues for org %s: %v", org, err))
+			continue
 		}
 
-		// Merge with existing issues
+		// Process and store issues by org/repo/number
 		for _, issue := range issues {
-			// Preserve Read status from existing issues if available
 			issue.Repo = parseRepo(issue.URL)
-			key := getIssueKey(issue)
-			if old, ok := existing[key]; ok {
-				issue.Read = old.Read
+
+			// Ensure maps exist for this org and repo
+			if _, ok := issuesConf[issue.Org]; !ok {
+				issuesConf[issue.Org] = make(map[string]map[int]types.Issue)
 			}
-			issuesConf = append(issuesConf, issue)
+			if _, ok := issuesConf[issue.Org][issue.Repo]; !ok {
+				issuesConf[issue.Org][issue.Repo] = make(map[int]types.Issue)
+			}
+
+			// Check if issue already exists to preserve Read status
+			if existingIssue, exists := issuesConf[issue.Org][issue.Repo][issue.ID]; exists {
+				issue.Read = existingIssue.Read
+			}
+
+			// Store the issue in the hierarchical structure
+			issuesConf[issue.Org][issue.Repo][issue.ID] = issue
 		}
 	}
 
@@ -65,8 +67,8 @@ func FetchIssues(owner string, fetchAll bool) ([]types.Issue, error) {
 	query := fmt.Sprintf("org:%s is:issue is:open sort:created-desc", owner)
 	encodedQuery := url.QueryEscape(query)
 
-	var allIssues []types.Issue
 	page := 1
+	var allIssues []types.Issue
 
 	for {
 		api := fmt.Sprintf("%s/search/issues?q=%s&per_page=100&page=%d", baseURL, encodedQuery, page)

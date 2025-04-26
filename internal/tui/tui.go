@@ -198,7 +198,8 @@ func orgsView() tview.Primitive {
 }
 
 func issuesView() tview.Primitive {
-	issues, _ := config.LoadIssues()
+	issuesMap, _ := config.LoadIssues()
+	issues := config.FlattenIssues(issuesMap)
 	sortIssues(issues)
 
 	// Create a selectable table
@@ -341,11 +342,20 @@ func issuesView() tview.Primitive {
 
 			// Mark issue as read
 			issue.Read = true
-			issues[row-1] = issue     // Update the original issues slice
+
+			// Update the issue in the map
+			if _, ok := issuesMap[issue.Org]; ok {
+				if _, ok := issuesMap[issue.Org][issue.Repo]; ok {
+					if _, ok := issuesMap[issue.Org][issue.Repo][issue.ID]; ok {
+						issuesMap[issue.Org][issue.Repo][issue.ID] = issue
+					}
+				}
+			}
+
 			RefreshChan <- struct{}{} // Trigger a refresh
 
 			// Save the updated issues back to the config
-			if err := config.SaveIssues(issues); err != nil {
+			if err := config.SaveIssues(issuesMap); err != nil {
 				logging.Error(fmt.Sprintf("Failed to save issues: %v", err))
 			}
 			logging.Info("Saved issues to config")
