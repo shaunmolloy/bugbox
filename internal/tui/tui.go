@@ -199,6 +199,7 @@ func orgsView() tview.Primitive {
 
 func issuesView() tview.Primitive {
 	issues, _ := config.LoadIssues()
+	sortIssues(issues)
 
 	// Create a selectable table
 	table := tview.NewTable().
