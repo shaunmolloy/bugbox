@@ -1,4 +1,4 @@
-# 🐛 BugBox
+# 🐛 Bugbox
 
 1. [Background](#background)
 1. [Features](#features)
@@ -13,9 +13,11 @@
 
 ## Background
 
-Git issue inbox from your terminal.
+Bugbox is a fast, terminal-based Git issue inbox — solving a problem for tracking issues across multiple orgs.
 
-Quickly view and manage GitHub issues across multiple organizations and repositories.
+Before, you would need to find issues by organisation. With Bugbox, you can track all your issues in one place.
+
+---
 
 > [!NOTE]  
 > This project is in early development.
