@@ -290,6 +290,9 @@ func issuesView() tview.Primitive {
 		cells = append(cells, tview.NewTableCell(createdAt))
 
 		for col, cell := range cells {
+			if issue.Read {
+				cell.SetTextColor(grayColor)
+			}
 			table.SetCell(row+1, col, cell)
 		}
 	}

@@ -69,6 +69,7 @@ func FetchIssues(owner string) ([]types.Issue, error) {
 	for i := range result.Items {
 		result.Items[i].Org = owner
 		result.Items[i].Repo = parseRepo(result.Items[i].URL)
+		result.Items[i].Read = false
 	}
 
 	logging.Info(fmt.Sprintf("Found %d issues in org: %s", result.Count, owner))
