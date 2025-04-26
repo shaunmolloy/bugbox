@@ -24,6 +24,7 @@ var (
 	orgFilter          = ""
 	useVerticalLayout  = false
 	currentScreenWidth = 0
+	selectedRow        = 1
 	// Colors
 	primaryColor   = tcell.ColorLimeGreen
 	secondaryColor = tcell.ColorDarkOliveGreen
@@ -305,14 +306,24 @@ func issuesView() tview.Primitive {
 
 	// Handle selection - only allow selecting data rows, not the header
 	if len(filteredIssues) > 0 {
-		table.Select(1, 0) // Select first data row by default
+		// Use the remembered selected row if possible
+		if selectedRow < len(filteredIssues)+1 {
+			table.Select(selectedRow, 0)
+		} else {
+			table.Select(1, 0) // Select first data row if previous selection is out of bounds
+			selectedRow = 1
+		}
 	}
 
-	// Custom selection handler to prevent selecting header
+	// Custom selection handler to prevent selecting header and update selected row
 	table.SetSelectionChangedFunc(func(row, column int) {
 		// If header row is selected, move to first data row if available
 		if row == 0 && len(filteredIssues) > 0 {
 			table.Select(1, 0)
+			selectedRow = 1
+		} else if row > 0 {
+			// Update selected row when user navigates
+			selectedRow = row
 		}
 	})
 
