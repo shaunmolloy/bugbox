@@ -320,6 +320,16 @@ func issuesView() tview.Primitive {
 			if err := openBrowser(issue.URL); err != nil {
 				logging.Error(fmt.Sprintf("Failed to open browser: %v", err))
 			}
+
+			// Mark issue as read
+			issue.Read = true
+			issues[row-1] = issue // Update the original issues slice
+			RefreshChan <- struct{}{} // Trigger a refresh
+
+			// Save the updated issues back to the config
+			if err := config.SaveIssues(issues); err != nil {
+				logging.Error(fmt.Sprintf("Failed to save issues: %v", err))
+			}
 		}
 	})
 
