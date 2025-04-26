@@ -227,6 +227,9 @@ func issuesView() tview.Primitive {
 		table.SetCell(0, i, cell)
 	}
 
+	// Sort issues by created, org, repo
+	sortByCreated(issues)
+
 	// Filter issues based on searchQuery and orgFilter
 	filteredIssues := issues
 
