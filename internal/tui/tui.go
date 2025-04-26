@@ -92,10 +92,8 @@ func layout() tview.Primitive {
 	rootFlex := tview.NewFlex().SetDirection(tview.FlexRow)
 
 	// Use vertical layout for small screens
-	useVerticalLayout = currentScreenWidth < breakpointMedium
-
+	useVerticalLayout = currentScreenWidth < breakpointLarge
 	if useVerticalLayout {
-		// Vertical layout for small screens
 		rootFlex.AddItem(issuesView(), 0, 3, !showSearch) // Issues take 3/4 of height
 		rootFlex.AddItem(orgsView(), 0, 1, false)         // Orgs take 1/4 of height
 	} else {
@@ -206,10 +204,20 @@ func issuesView() tview.Primitive {
 		SetSelectable(true, false) // Enable row selection only
 
 	// Define column widths - use expansion to control the width ratios
-	colExpansions := []int{8, 1, 1} // Title takes 80%, Org and Created take 10% each
+	colExpansions := []int{8, 1, 1} // Title, Org, Created
 
 	// Header row
 	headers := []string{"Title", "Org", "Created"}
+
+	// Add "Repo" column if the screen is wide enough
+	if currentScreenWidth > breakpointMedium {
+		headers = append(headers, "")            // extend slice by 1
+		index := 2                               // insert after "Org"
+		copy(headers[index+1:], headers[index:]) // shift elements right
+		headers[index] = "Repo"                  // insert new value
+		colExpansions = []int{7, 1, 1, 1}        // Title, Repo, Org, Created
+	}
+
 	for i, h := range headers {
 		cell := tview.NewTableCell(fmt.Sprintf("[::b]%s", h)).
 			SetTextColor(tcell.ColorLightGrey).
@@ -269,9 +277,20 @@ func issuesView() tview.Primitive {
 			break
 		}
 
-		table.SetCell(row+1, 0, tview.NewTableCell(title))
-		table.SetCell(row+1, 1, tview.NewTableCell(issue.Org))
-		table.SetCell(row+1, 2, tview.NewTableCell(issue.CreatedAt.Format("2006-01-02")))
+		cells := []*tview.TableCell{
+			tview.NewTableCell(title),
+			tview.NewTableCell(issue.Org),
+		}
+
+		if currentScreenWidth > breakpointMedium {
+			cells = append(cells, tview.NewTableCell(issue.Repo))
+		}
+
+		cells = append(cells, tview.NewTableCell(issue.CreatedAt.Format("2006-01-02")))
+
+		for col, cell := range cells {
+			table.SetCell(row+1, col, cell)
+		}
 	}
 
 	// Handle selection - only allow selecting data rows, not the header
