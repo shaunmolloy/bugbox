@@ -15,7 +15,22 @@ const baseURL = "https://api.github.com"
 
 func FetchAllIssues() error {
 	conf, _ := config.LoadConfig()
-	issuesConf := config.Issues{}
+	issuesConf := config.Issues{} // Initialize an empty Issues slice
+
+	// Load existing issues
+	existingIssues, err := config.LoadIssues()
+	if err != nil {
+		logging.Error(fmt.Sprintf("Error loading existing issues: %v", err))
+		return err
+	}
+
+	// Index existing issues by "Org|Repo|ID"
+	existing := make(map[string]types.Issue)
+	for _, i := range existingIssues {
+		i.Repo = parseRepo(i.URL)
+		key := getIssueKey(i)
+		existing[key] = i
+	}
 
 	for _, org := range conf.Orgs {
 		issues, err := FetchIssues(org)
@@ -23,13 +38,23 @@ func FetchAllIssues() error {
 			logging.Error(fmt.Sprintf("Error fetching issues for org %s: %v", org, err))
 		}
 
-		issuesConf = append(issuesConf, issues...)
-
-		if err := config.SaveIssues(issuesConf); err != nil {
-			logging.Error(fmt.Sprintf("Error saving issues for org %s: %v", org, err))
-			return err
+		// Merge with existing issues
+		for _, issue := range issues {
+			// Preserve Read status from existing issues if available
+			issue.Repo = parseRepo(issue.URL)
+			key := getIssueKey(issue)
+			if old, ok := existing[key]; ok {
+				issue.Read = old.Read
+			}
+			issuesConf = append(issuesConf, issue)
 		}
 	}
+
+	if err := config.SaveIssues(issuesConf); err != nil {
+		logging.Error(fmt.Sprintf("Error saving issues: %v", err))
+		return err
+	}
+
 	return nil
 }
 
@@ -69,6 +94,7 @@ func FetchIssues(owner string) ([]types.Issue, error) {
 	for i := range result.Items {
 		result.Items[i].Org = owner
 		result.Items[i].Repo = parseRepo(result.Items[i].URL)
+		result.Items[i].Read = false
 	}
 
 	logging.Info(fmt.Sprintf("Found %d issues in org: %s", result.Count, owner))

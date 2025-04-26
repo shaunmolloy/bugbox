@@ -24,6 +24,7 @@ var (
 	orgFilter          = ""
 	useVerticalLayout  = false
 	currentScreenWidth = 0
+	selectedRow        = 1
 	// Colors
 	primaryColor   = tcell.ColorLimeGreen
 	secondaryColor = tcell.ColorDarkOliveGreen
@@ -268,9 +269,15 @@ func issuesView() tview.Primitive {
 			title = title[:50]
 			break
 		case currentScreenWidth < breakpointLarge:
-			if len(title) > 72 { title = title[:72] }
-			if len(issue.Org) > 15 { issue.Org = issue.Org[:15] }
-			if len(issue.Repo) > 15 { issue.Repo = issue.Repo[:15] }
+			if len(title) > 72 {
+				title = title[:72]
+			}
+			if len(issue.Org) > 15 {
+				issue.Org = issue.Org[:15]
+			}
+			if len(issue.Repo) > 15 {
+				issue.Repo = issue.Repo[:15]
+			}
 			break
 		case len(title) > 120:
 			title = title[:120]
@@ -290,20 +297,33 @@ func issuesView() tview.Primitive {
 		cells = append(cells, tview.NewTableCell(createdAt))
 
 		for col, cell := range cells {
+			if issue.Read {
+				cell.SetTextColor(grayColor)
+			}
 			table.SetCell(row+1, col, cell)
 		}
 	}
 
 	// Handle selection - only allow selecting data rows, not the header
 	if len(filteredIssues) > 0 {
-		table.Select(1, 0) // Select first data row by default
+		// Use the remembered selected row if possible
+		if selectedRow < len(filteredIssues)+1 {
+			table.Select(selectedRow, 0)
+		} else {
+			table.Select(1, 0) // Select first data row if previous selection is out of bounds
+			selectedRow = 1
+		}
 	}
 
-	// Custom selection handler to prevent selecting header
+	// Custom selection handler to prevent selecting header and update selected row
 	table.SetSelectionChangedFunc(func(row, column int) {
 		// If header row is selected, move to first data row if available
 		if row == 0 && len(filteredIssues) > 0 {
 			table.Select(1, 0)
+			selectedRow = 1
+		} else if row > 0 {
+			// Update selected row when user navigates
+			selectedRow = row
 		}
 	})
 
@@ -317,6 +337,17 @@ func issuesView() tview.Primitive {
 			if err := openBrowser(issue.URL); err != nil {
 				logging.Error(fmt.Sprintf("Failed to open browser: %v", err))
 			}
+
+			// Mark issue as read
+			issue.Read = true
+			issues[row-1] = issue     // Update the original issues slice
+			RefreshChan <- struct{}{} // Trigger a refresh
+
+			// Save the updated issues back to the config
+			if err := config.SaveIssues(issues); err != nil {
+				logging.Error(fmt.Sprintf("Failed to save issues: %v", err))
+			}
+			logging.Info("Saved issues to config")
 		}
 	})
 

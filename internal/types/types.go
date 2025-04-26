@@ -9,6 +9,7 @@ type Issue struct {
 	Title     string    `json:"title"`
 	URL       string    `json:"html_url"`
 	Labels    []Label   `json:"labels"`
+	Read      bool      `json:"read"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
