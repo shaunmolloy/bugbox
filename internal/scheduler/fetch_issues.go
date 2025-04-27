@@ -6,14 +6,14 @@ import (
 
 	"github.com/shaunmolloy/bugbox/internal/issues/github"
 	"github.com/shaunmolloy/bugbox/internal/logging"
+	"github.com/shaunmolloy/bugbox/internal/storage/config"
 	"github.com/shaunmolloy/bugbox/internal/tui"
 )
 
 // FetchIssues starts a goroutine that polls for GitHub issues every minute
 func FetchIssues() {
 	go func() {
-		// Wait 5 seconds before initial fetch to improve startup time
-		time.Sleep(5 * time.Second)
+		config.PruneInvalidOrgs()
 		handleGitHub(true)
 
 		// Then fetch every minute
