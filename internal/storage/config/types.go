@@ -7,5 +7,5 @@ type Config struct {
 	Orgs        []string `json:"orgs"`
 }
 
-// Issues represents the hierarchical structure of issues organized by org, repo, and issue number
+// Issues as hierarchical structure of issues organized by org, repo, and id
 type Issues map[string]map[string]map[int]types.Issue
