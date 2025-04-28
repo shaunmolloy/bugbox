@@ -31,7 +31,3 @@ clean:
 install:
 	@echo "Installing dependencies..."
 	$(GO) mod tidy
-
-release:
-	@echo "Releasing..."
-	goreleaser release --clean
