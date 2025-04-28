@@ -1,26 +1,13 @@
 # 🐛 Bugbox
 
-1. [Background](#background)
-1. [Features](#features)
-1. [Preview](#preview)
-1. [Install](#install)
-1. [Usage](#usage)
-1. [Configuration](#configuration)
-1. [Debugging](#debugging)
-1. [License](#license)
-
----
-
-## Background
+![](https://img.shields.io/github/v/release/shaunmolloy/bugbox.svg)
+![](https://img.shields.io/badge/license-MIT-brightgreen.svg)
 
 Bugbox is a fast, terminal-based Git issue inbox — solving a problem for tracking issues across multiple orgs.
 
 Before, you would need to find issues by organisation. With Bugbox, you can track all your issues in one place.
 
----
-
-> [!NOTE]  
-> This project is in early development.
+![Screenshot](./screenshot.png)
 
 ---
 
@@ -35,15 +22,14 @@ Before, you would need to find issues by organisation. With Bugbox, you can trac
 
 ---
 
-## Preview
-
-![Screenshot](./screenshot.png)
-
----
-
 ## Install
 
-### Recommended
+### From Releases
+
+Install package from releases page:  
+https://github.com/shaunmolloy/bugbox/releases
+
+### With Go
 
 ```bash
 go install github.com/shaunmolloy/bugbox@latest
