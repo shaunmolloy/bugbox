@@ -18,7 +18,7 @@ var RefreshChan = make(chan struct{}, 1)
 
 // Global state for controlling UI elements
 var (
-	conf, _            = config.LoadConfig()
+	conf               = config.Config{}
 	showSearch         = false
 	searchQuery        = ""
 	orgFilter          = ""
@@ -57,6 +57,7 @@ func Start() error {
 	go func() {
 		for range RefreshChan {
 			logging.Info(fmt.Sprintf("Refreshing TUI. Width: %d", currentScreenWidth))
+			conf, _ = config.LoadConfig()
 			app.QueueUpdateDraw(func() {
 				// Replace the layout with a refreshed one
 				newLayout := layout()
