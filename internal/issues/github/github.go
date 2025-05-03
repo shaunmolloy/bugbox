@@ -47,6 +47,14 @@ func FetchAllIssues(fetchAll bool) error {
 				issue.Read = existingIssue.Read
 			}
 
+			// Remove issue from conf if state is closed
+			if issue.State == types.StateClosed {
+				delete(issuesConf[issue.Org][issue.Repo], issue.ID)
+				if len(issuesConf[issue.Org][issue.Repo]) == 0 {
+					delete(issuesConf[issue.Org], issue.Repo)
+				}
+			}
+
 			// Store the issue in the hierarchical structure
 			issuesConf[issue.Org][issue.Repo][issue.ID] = issue
 		}
