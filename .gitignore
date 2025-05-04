@@ -12,3 +12,7 @@ Thumbs.db
 *.swp
 *.swo
 *.bak
+
+# Test files
+coverage.out
+coverage.html

@@ -24,6 +24,13 @@ test:
 	@echo "Running tests..."
 	$(GO) test -v ./...
 
+test_cover:
+	@echo "Running tests with coverage..."
+	$(GO) test -coverprofile=coverage.out ./...
+	$(GO) tool cover -html=coverage.out -o coverage.html
+	$(GO) tool cover -func coverage.out
+	@echo "Coverage report generated: coverage.html"
+
 clean:
 	@echo "Cleaning build..."
 	rm -f $(APP_NAME)
