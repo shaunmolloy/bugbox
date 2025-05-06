@@ -13,6 +13,6 @@ Thumbs.db
 *.swo
 *.bak
 
-# Test files
+# Test coverage files
 coverage.out
 coverage.html
