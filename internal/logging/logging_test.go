@@ -21,7 +21,7 @@ func TestSetupLogger(t *testing.T) {
 }
 
 func TestInfo(t *testing.T) {
-	t.Run("logs info message", func(t *testing.T) {
+	t.Run("returns nil for info log", func(t *testing.T) {
 		tmpFile := createTmpFile(t)
 		defer os.Remove(tmpFile.Name())
 		LogPath = tmpFile.Name()
@@ -45,7 +45,7 @@ func TestInfo(t *testing.T) {
 }
 
 func TestDebug(t *testing.T) {
-	t.Run("logs debug message", func(t *testing.T) {
+	t.Run("returns nil for debug log", func(t *testing.T) {
 		tmpFile := createTmpFile(t)
 		defer os.Remove(tmpFile.Name())
 		LogPath = tmpFile.Name()
@@ -69,7 +69,7 @@ func TestDebug(t *testing.T) {
 }
 
 func TestError(t *testing.T) {
-	t.Run("logs error message", func(t *testing.T) {
+	t.Run("returns nil for error log", func(t *testing.T) {
 		tmpFile := createTmpFile(t)
 		defer os.Remove(tmpFile.Name())
 		LogPath = tmpFile.Name()
