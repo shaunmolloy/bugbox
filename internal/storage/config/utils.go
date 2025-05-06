@@ -9,9 +9,9 @@ import (
 )
 
 // IsExist returns true if path exists
-func IsExist(path string) bool {
+func IsExist(path string) (bool, error) {
 	_, err := os.Stat(path)
-	return !os.IsNotExist(err)
+	return !os.IsNotExist(err), err
 }
 
 // LoadFromFile loads config from a file

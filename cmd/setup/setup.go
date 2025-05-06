@@ -46,7 +46,7 @@ func isSetup() bool {
 	if len(os.Args) > 1 && os.Args[1] == "setup" {
 		return true
 	}
-	if !config.IsExist(config.ConfigPath) {
+	if exists, _ := config.IsExist(config.ConfigPath); exists {
 		return true
 	}
 	if err := config.Validate(); err != nil {
