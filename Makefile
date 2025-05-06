@@ -34,7 +34,7 @@ test_cover:
 
 test_watch:
 	@echo "Watching for changes..."
-	nodemon --watch './**/*.go' --ext go --signal SIGTERM --exec 'make test_cover || exit 1'
+	nodemon --watch './**/*.go' --ext go --signal SIGTERM --exec 'clear && make test_cover || exit 1'
 
 clean:
 	@echo "Cleaning build..."
