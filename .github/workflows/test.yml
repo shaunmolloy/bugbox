@@ -2,10 +2,10 @@ name: Test
 
 on:
   push:
-    # branches: [ 'main' ] # TODO uncomment for main branch
-    # paths:
-    #   - '**.go'
-    #   - '**.mod'
+    branches: [ 'main' ]
+    paths:
+      - '**.go'
+      - '**.mod'
 
 permissions:
   contents: write
