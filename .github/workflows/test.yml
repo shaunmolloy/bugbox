@@ -8,7 +8,7 @@ on:
     #   - '**.mod'
 
 permissions:
-  wiki: write
+  contents: write
 
 jobs:
   test:
