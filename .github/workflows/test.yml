@@ -2,7 +2,7 @@ name: Test
 
 on:
   push:
-    branches: [ 'main' ]
+    # branches: [ 'main' ] # TODO uncomment for main branch
     paths:
       - '**.go'
       - '**.mod'
