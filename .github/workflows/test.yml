@@ -3,9 +3,9 @@ name: Test
 on:
   push:
     # branches: [ 'main' ] # TODO uncomment for main branch
-    paths:
-      - '**.go'
-      - '**.mod'
+    # paths:
+    #   - '**.go'
+    #   - '**.mod'
 
 permissions:
   contents: read
