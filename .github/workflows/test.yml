@@ -25,8 +25,3 @@ jobs:
 
     - name: Build coverage report
       uses: ncruces/go-coverage-report@v0.3.0
-      with:
-        coverage-file: coverage.out
-        report: true
-        chart: true
-        amend: false
