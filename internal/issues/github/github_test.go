@@ -37,7 +37,7 @@ func TestFetchIssues(t *testing.T) {
 			DoFunc: func(req *http.Request) (*http.Response, error) {
 				return &http.Response{
 					StatusCode: http.StatusOK,
-					Body: io.NopCloser(strings.NewReader(`{"total_count": 0, "items": []}`)),
+					Body:       io.NopCloser(strings.NewReader(`{"total_count": 0, "items": []}`)),
 				}, nil
 			},
 		}
