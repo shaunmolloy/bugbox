@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/shaunmolloy/bugbox/cmd/setup"
@@ -23,6 +24,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	scheduler.FetchIssues()
+	client := &http.Client{}
+	scheduler.FetchIssues(client)
 	tui.Start()
 }
