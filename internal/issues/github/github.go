@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/shaunmolloy/bugbox/internal/issues"
 	"github.com/shaunmolloy/bugbox/internal/logging"
 	"github.com/shaunmolloy/bugbox/internal/storage/config"
 	"github.com/shaunmolloy/bugbox/internal/types"
@@ -13,7 +14,7 @@ import (
 
 const baseURL = "https://api.github.com"
 
-func FetchAllIssues(fetchAll bool) error {
+func FetchAllIssues(fetchAll bool, client issues.HttpClient) error {
 	conf, _ := config.LoadConfig()
 
 	// Load existing issues
@@ -24,7 +25,7 @@ func FetchAllIssues(fetchAll bool) error {
 	}
 
 	for _, org := range conf.Orgs {
-		issues, err := FetchIssues(org, fetchAll)
+		issues, err := FetchIssues(org, fetchAll, client)
 		if err != nil {
 			logging.Error(fmt.Sprintf("Error fetching issues for org %s: %v", org, err))
 			continue
@@ -68,7 +69,7 @@ func FetchAllIssues(fetchAll bool) error {
 	return nil
 }
 
-func FetchIssues(owner string, fetchAll bool) ([]types.Issue, error) {
+func FetchIssues(owner string, fetchAll bool, client issues.HttpClient) ([]types.Issue, error) {
 	logging.Info(fmt.Sprintf("Searching GitHub issues in org: %s", owner))
 	conf, _ := config.LoadConfig()
 
@@ -89,7 +90,6 @@ func FetchIssues(owner string, fetchAll bool) ([]types.Issue, error) {
 		req.Header.Set("Authorization", "token "+conf.GitHubToken)
 		req.Header.Set("Accept", "application/vnd.github.v3+json")
 
-		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
 			return nil, err

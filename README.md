@@ -2,6 +2,7 @@
 
 ![](https://img.shields.io/github/v/release/shaunmolloy/bugbox.svg)
 ![](https://img.shields.io/badge/license-MIT-brightgreen.svg)
+[![Go Coverage](https://github.com/shaunmolloy/bugbox/wiki/coverage.svg)](https://raw.githack.com/wiki/shaunmolloy/bugbox/coverage.html)
 
 Bugbox is a fast, terminal-based Git issue inbox — solving a problem for tracking issues across multiple orgs.
 

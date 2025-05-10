@@ -1,0 +1,27 @@
+name: Test
+
+on:
+  push:
+    branches: [ 'main' ]
+    paths:
+      - '**.go'
+      - '**.mod'
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-go@v5
+      with: { go-version: stable }
+
+    - name: Collect coverage
+      run: make test_cover
+
+    - name: Build coverage report
+      uses: ncruces/go-coverage-report@v0.3.0

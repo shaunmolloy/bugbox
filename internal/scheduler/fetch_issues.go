@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/shaunmolloy/bugbox/internal/issues"
 	"github.com/shaunmolloy/bugbox/internal/issues/github"
 	"github.com/shaunmolloy/bugbox/internal/logging"
 	"github.com/shaunmolloy/bugbox/internal/storage/config"
@@ -11,22 +12,22 @@ import (
 )
 
 // FetchIssues starts a goroutine that polls for GitHub issues every minute
-func FetchIssues() {
+func FetchIssues(client issues.HttpClient) {
 	go func() {
 		config.PruneInvalidOrgs()
-		handleGitHub(true)
+		handleGitHub(true, client)
 
 		// Then fetch every minute
 		ticker := time.NewTicker(1 * time.Minute)
 		for range ticker.C {
-			handleGitHub(false)
+			handleGitHub(false, client)
 		}
 	}()
 }
 
-func handleGitHub(fetchAll bool) {
+func handleGitHub(fetchAll bool, client issues.HttpClient) {
 	logging.Info("Fetching GitHub issues...")
-	err := github.FetchAllIssues(fetchAll)
+	err := github.FetchAllIssues(fetchAll, client)
 	if err != nil {
 		logging.Error(fmt.Sprintf("Fetching error: %v", err))
 		return
