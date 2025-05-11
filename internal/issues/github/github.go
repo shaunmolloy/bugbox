@@ -54,6 +54,7 @@ func FetchAllIssues(fetchAll bool, client issues.HttpClient) error {
 				if len(issuesConf[issue.Org][issue.Repo]) == 0 {
 					delete(issuesConf[issue.Org], issue.Repo)
 				}
+				continue
 			}
 
 			// Store the issue in the hierarchical structure
@@ -73,7 +74,7 @@ func FetchIssues(owner string, fetchAll bool, client issues.HttpClient) ([]types
 	logging.Info(fmt.Sprintf("Searching GitHub issues in org: %s", owner))
 	conf, _ := config.LoadConfig()
 
-	query := fmt.Sprintf("org:%s is:issue is:open sort:created-desc", owner)
+	query := fmt.Sprintf("org:%s is:issue sort:created-desc", owner)
 	encodedQuery := url.QueryEscape(query)
 
 	page := 1
